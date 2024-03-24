@@ -1,0 +1,7 @@
+init2__10MarioActorFRCQ29JGeometry8TVec3fRCQ29JGeometry8TVec3fl=0x802aed64
+IOS_Open=0x804d27e8
+IOS_Ioctl=0x804d3180
+IOS_Write=0x804d2d78
+IOS_Close=0x804d29c8
+memcpy=0x8046A2EC
+memset=0x8046A414

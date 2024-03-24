@@ -1,0 +1,4 @@
+*.o
+multiplayerpatch.xml
+initPatch.xml
+*.ini
