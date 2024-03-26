@@ -2,3 +2,4 @@
 multiplayerpatch.xml
 initPatch.xml
 *.ini
+.*.swp

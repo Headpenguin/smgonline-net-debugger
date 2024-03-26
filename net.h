@@ -1,7 +1,7 @@
 #ifndef NET_H
 #define NET_H
 
-typedef long size_t;
+typedef unsigned long size_t;
 
 struct sockaddr_in {
     unsigned char addrlen;

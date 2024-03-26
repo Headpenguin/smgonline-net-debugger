@@ -8,11 +8,11 @@ LD = /opt/devkitpro/devkitPPC/bin/powerpc-eabi-ld
 KAMEK ?= ~/dotnet/dotnet ~/GitClones/Kamek/Kamek/bin/Debug/net6.0/Kamek.dll
 PETARI = ~/GitClones/Petari
 
-CFLAGS ?= -O2 -Wall -I $(PETARI)/libs/RVL_SDK/include -I $(PETARI)/libs/MSL_C/include
+CFLAGS ?= -Os -Wall -I $(PETARI)/libs/RVL_SDK/include -I $(PETARI)/libs/MSL_C/include
 
 ADDRESS ?= 0x80002A00
 
-O_FILES = net.o khooks.o substitute.o testnet.o
+O_FILES = net.o khooks.o substitute.o packets.o
 
 REGION ?= us
 SYMBOL_MAP ?= symbols-$(REGION).txt

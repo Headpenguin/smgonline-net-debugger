@@ -166,9 +166,9 @@ long netread(long fd, void *data, size_t len) {
         {NULL, 0} // Out - Address (recvfrom is not implemented)
     };
 
-    if(iftop_fd < 0) return -ENXIO;
+    if(iptop_fd < 0) return -ENXIO;
 
-    if((unsigned int)data % 32) return -ENVAL; // not aligned
+    if((unsigned int)data % 32) return -EINVAL; // not aligned
                                                
     return IOS_Ioctlv(iptop_fd, IOCTL_SORecvFrom, 1, 2, v);
 }
