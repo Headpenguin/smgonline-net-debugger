@@ -16,14 +16,17 @@ static long ipaddr = 0;
 
 #define IOCTL_NWC24iStartupSocket 0x06
 
-#define IOCTL_SOStartup 0x1F
-#define IOCTL_SOSocket 0x0F
 #define IOCTL_SOConnect 0x04
+#define IOCTL_SORecvFrom 0x0C
+#define IOCTL_SOSendTo 0x0D
+#define IOCTL_SOSocket 0x0F
 #define IOCTL_SOGetHostID 0x10
+#define IOCTL_SOStartup 0x1F
 //#define IOCTL_SOShutown 0x0E
 
 #define ENXIO 6
 #define ETIMEDOUT 110
+#define EINVAL 22
 
 long netinit() {
     long kd_fd = -1, err = 0, i = 0;
@@ -118,13 +121,55 @@ long netconnect(long fd, struct sockaddr_in *addr) {
 
     if(iptop_fd < 0) return -ENXIO;
     
-    memset(&buff, 0, sizeof(struct connect_data));
+    memset(&buff, 0, sizeof(buff));
 
     buff.fd = fd;
     buff.has_addr = 1;
 
-    memcpy(&buff, addr, sizeof(struct sockaddr_in));
+    memcpy(&buff.addr, addr, sizeof(*addr));
     
-    return IOS_Ioctl(iptop_fd, IOCTL_SOConnect, &buff, sizeof(struct connect_data), NULL, 0);
+    return IOS_Ioctl(iptop_fd, IOCTL_SOConnect, &buff, sizeof(buff), NULL, 0);
+}
+
+struct sendto_data {
+    long fd;
+    unsigned long flags;
+    unsigned long has_addr;
+    unsigned char addr[28];
+};
+
+long netwrite(long fd, const void *data, size_t len) {
+    struct sendto_data params __attribute((aligned(32)));
+    IOSIoVector v[2] __attribute((aligned(32)));
+
+    if(iptop_fd < 0) return -ENXIO;
+
+    if((unsigned int)data % 32) return -EINVAL; // not aligned
+                        
+    memset(&params, 0, sizeof params);
+    params.fd = fd;
+    params.has_addr = 0;
+
+    v[0].base = data;
+    v[0].length = len;
+    v[1].base = &params;
+    v[1].length = sizeof params;
+
+    return IOS_Ioctlv(iptop_fd, IOCTL_SOSendTo, 2, 0, v);
+}
+
+long netread(long fd, void *data, size_t len) {
+    unsigned int params[2] __attribute((aligned(32))) = {fd, 0};
+    IOSIoVector v[3] __attribute((aligned(32))) = {
+        {&params, 8},
+        {data, len},
+        {NULL, 0} // Out - Address (recvfrom is not implemented)
+    };
+
+    if(iftop_fd < 0) return -ENXIO;
+
+    if((unsigned int)data % 32) return -ENVAL; // not aligned
+                                               
+    return IOS_Ioctlv(iptop_fd, IOCTL_SORecvFrom, 1, 2, v);
 }
 
