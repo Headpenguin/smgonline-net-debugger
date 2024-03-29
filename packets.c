@@ -17,7 +17,7 @@ static struct sockaddr_in server_addr = {
     0x0A000060
 };
 
-void* __nw(unsigned int, int);
+void* __nw__FUli(unsigned int, int);
 
 /*
     Transmission structure: PACKET_DISC, packet_*, [data1], ... 
@@ -25,6 +25,7 @@ void* __nw(unsigned int, int);
 
 long packet_init(void) {
     long err = 0;
+    char buff[8] __attribute((aligned(32))) = "connect";
     err = netinit();
     if(err < 0) return err;
     sockfd = netsocket(2, 2, 0);
@@ -33,6 +34,9 @@ long packet_init(void) {
     if(err < 0) return err;
     readbuff = __nw__FUli(READBUFF_SIZE, 32);
     if(!readbuff) return -ENOMEM;
+//    memcpy(readbuff, "connect", 8);
+    err = netwrite(sockfd, buff, 8);
+    if(err < 0) return err;
     return 0;
 }
 

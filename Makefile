@@ -12,7 +12,7 @@ CFLAGS ?= -Os -Wall -I $(PETARI)/libs/RVL_SDK/include -I $(PETARI)/libs/MSL_C/in
 
 ADDRESS ?= 0x80002A00
 
-O_FILES = net.o khooks.o substitute.o packets.o
+O_FILES = net.o khooks.o substitute.o packets.o testnet.o
 
 REGION ?= us
 SYMBOL_MAP ?= symbols-$(REGION).txt

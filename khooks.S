@@ -13,3 +13,4 @@ _kHook2:
 .long 0x1
 .int __vt__10MarioActor + 0x50
 .long substitutionB
+
