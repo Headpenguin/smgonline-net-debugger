@@ -12,7 +12,7 @@ struct sockaddr_in {
 
 long netinit(void);
 long netsocket(long domain, long type, long protocol);
-long netconnect(long fd, struct sockaddr_in *addr);
+long netconnect(long fd, const struct sockaddr_in *addr);
 // Please align `data` to 32 bytes
 long netwrite(long fd, const void *data, size_t len);
 // Please align `data` to 32 bytes

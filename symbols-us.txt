@@ -16,3 +16,4 @@ testButton1__10WPadButtonCFv=0x803AB034
 movement__10MarioActorFv=0x802AFD80
 __nw__FUli=0x80409B04
 __vt__10MarioActor=0x805A399C
+DCFlushRange=0x804A2F20

@@ -10,7 +10,7 @@ static void *readbuff;
 static long sockfd = -1;
 #define READBUFF_SIZE 1500
 
-static struct sockaddr_in server_addr = {
+static const struct sockaddr_in server_addr = {
     8,
     2,
     5000,
@@ -23,9 +23,10 @@ void* __nw__FUli(unsigned int, int);
     Transmission structure: PACKET_DISC, packet_*, [data1], ... 
 */
 
+static const char *connect_msg = "connect";
+
 long packet_init(void) {
     long err = 0;
-    char buff[8] __attribute((aligned(32))) = "connect";
     err = netinit();
     if(err < 0) return err;
     sockfd = netsocket(2, 2, 0);
@@ -34,8 +35,8 @@ long packet_init(void) {
     if(err < 0) return err;
     readbuff = __nw__FUli(READBUFF_SIZE, 32);
     if(!readbuff) return -ENOMEM;
-//    memcpy(readbuff, "connect", 8);
-    err = netwrite(sockfd, buff, 8);
+    memcpy(readbuff, connect_msg, 8);
+    err = netwrite(sockfd, readbuff, 8);
     if(err < 0) return err;
     return 0;
 }
@@ -49,7 +50,8 @@ long packet_mainloop(void) {
     
     while(1) {
         err = netread(sockfd, readbuff, READBUFF_SIZE);
-        
+
+
         if(err < 0) return err;
 
         len = err;
@@ -72,7 +74,7 @@ long packet_mainloop(void) {
                 rwaddr = transmission->read.addr;
                 rwlen = transmission->read.len;
                 // done reading
-                if(rwlen > sizeof transmission->disc + sizeof transmission->ack) continue;
+                if(sizeof transmission->disc + sizeof transmission->ack + rwlen > READBUFF_SIZE) continue;
                 transmission->disc = PACKET_DISC_ACK;
                 transmission->ack.len = rwlen;
                 memcpy(readbuff + sizeof transmission->disc + sizeof transmission->ack, (const void *)rwaddr, rwlen);

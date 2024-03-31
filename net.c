@@ -3,6 +3,7 @@ typedef unsigned long size_t;
 #include "net.h"
 
 #include <revolution/ipc/ipcclt.h>
+#include <revolution/os/OSCache.h>
 #include "cstring"
 #include "mem.h"
 
@@ -116,7 +117,7 @@ struct connect_data {
     unsigned char addr[28];
 };
 
-long netconnect(long fd, struct sockaddr_in *addr) {
+long netconnect(long fd, const struct sockaddr_in *addr) {
     struct connect_data buff __attribute((aligned(32)));
 
     if(iptop_fd < 0) return -ENXIO;
@@ -150,6 +151,9 @@ long netwrite(long fd, const void *data, size_t len) {
     params.fd = fd;
     params.has_addr = 0;
 
+    DCFlushRange(data, len);
+    DCFlushRange(&params, sizeof params);
+
     v[0].base = data;
     v[0].length = len;
     v[1].base = &params;
@@ -161,7 +165,7 @@ long netwrite(long fd, const void *data, size_t len) {
 long netread(long fd, void *data, size_t len) {
     unsigned int params[2] __attribute((aligned(32))) = {fd, 0};
     IOSIoVector v[3] __attribute((aligned(32))) = {
-        {&params, 8},
+        {params, 8},
         {data, len},
         {NULL, 0} // Out - Address (recvfrom is not implemented)
     };
@@ -169,6 +173,8 @@ long netread(long fd, void *data, size_t len) {
     if(iptop_fd < 0) return -ENXIO;
 
     if((unsigned int)data % 32) return -EINVAL; // not aligned
+
+    DCFlushRange(params, 8);
                                                
     return IOS_Ioctlv(iptop_fd, IOCTL_SORecvFrom, 1, 2, v);
 }
