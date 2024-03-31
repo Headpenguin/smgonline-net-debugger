@@ -1,0 +1,5 @@
+Makefile has been borrowed from https://github.com/MasterofGalaxies/smg2-multiplayer/blob/master/Makefile
+net.c use OS interfaces researched by certain individuals (not myself) and published at https://wiibrew.org/wiki/IOS and subpages
+IOCTL and IOCTLV formats were determined based on https://github.com/devkitPro/libogc/blob/master/libogc/network_wii.c
+
+(as of March 2024)
