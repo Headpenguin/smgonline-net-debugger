@@ -1,5 +1,6 @@
 *.o
-multiplayerpatch.xml
-initPatch.xml
+*.xml
 *.ini
 .*.swp
+*.bin
+dependencies.mk

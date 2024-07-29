@@ -1,6 +1,8 @@
 #ifndef PACKETS_H
 #define PACKETS_H
 
+typedef int BOOL;
+
 enum PACKET_DISC {
     PACKET_DISC_STOP, 
     PACKET_DISC_ACK, 
@@ -30,5 +32,7 @@ struct packet_transmission {
         struct packet_write write;
     };
 };
+
+BOOL connected;
 
 #endif

@@ -19,7 +19,7 @@ void testNet(void) {
 
     netinit();
     fd = netsocket(2, 2, 0);
-    netconnect(fd, &server_addr);
-    netwrite(fd, buff, 10);
+//    netconnect(fd, &server_addr);
+    netsendto(fd, buff, 10, server_addr);
 }
 

@@ -1,54 +1,40 @@
-CROSS_COMPILE ?= powerpc-eabi-
+# Get all of the locations for dependencies
+# Modify dependencies.mk to set the locations/commands for each tool
+include dependencies.mk
 
-#CC = wine ~/GitClones/PetariDeps/Compilers/Wii/1.3/mwcceppc.exe
-CC = /opt/devkitpro/devkitPPC/bin/powerpc-eabi-gcc
-#AS = wine ~/GitClones/PetariDeps/Compilers/Wii/1.3/mwasmeppc.exe
-AS = /opt/devkitpro/devkitPPC/bin/powerpc-eabi-as
-LD = /opt/devkitpro/devkitPPC/bin/powerpc-eabi-ld
-KAMEK ?= ~/dotnet/dotnet ~/GitClones/Kamek/Kamek/bin/Debug/net6.0/Kamek.dll
-PETARI = ~/GitClones/Petari
+INCLUDE := -i ./ -I- -i $(PATH_TO_GAME) -i $(PATH_TO_RFL) -i $(PATH_TO_RVL) -I- -i $(PATH_TO_TRK) -I- -i $(PATH_TO_RUNTIME) -I- -i $(PATH_TO_MSL_C) -I- -i $(PATH_TO_MSL_CPP) -I- -i $(PATH_TO_JSYS) -I- -i $(PATH_TO_NW4R) -I- -i $(BUSSUN_INCLUDE)
 
-CFLAGS ?= -O2 -Wall -I $(PETARI)/libs/RVL_SDK/include -I $(PETARI)/libs/MSL_C/include
+WARNFLAGS := -w all -pragma "warning off (10122)"
 
-ADDRESS ?= 0x80001A00
+CXXFLAGS := -c -Cpp_exceptions off -nodefaults -proc gekko -fp hard -ipa file -inline auto,level=2 -O4,s -rtti off -sdata 0 -sdata2 0 -align powerpc -enum int $(INCLUDE) $(WARNFLAGS)
 
-O_FILES = net.o khooks.o substitute.o packets.o
+CFLAGS := -lang c99 $(CXXFLAGS)
 
-REGION ?= us
-SYMBOL_MAP ?= symbols-$(REGION).txt
-DEFINES += -D$(REGION)
+#ASMFLAGS := -c -proc gecko
 
-ifneq ($(BUBBLE),)
-	DEFINES += -DBUBBLE
-endif
+O_FILES := net.o packets.o 
 
-ifneq ($(SPLITSCREEN),)
-	DEFINES += -DSPLITSCREEN
-	O_FILES += splitscreen.o
-endif
 
-all: multiplayerpatch.xml multiplayerpatch.ini
+export SYMBOL_MAP
+SYMBOL_OSEV_ADDR := $(shell export SYMBOL_MAP="$(SYMBOL_MAP)" ; line=`grep OSExceptionVector $$SYMBOL_MAP` ; echo $${line#*=})
+
+
+all: interrupts.xml CustomCode_USA.bin
 
 clean:
-	rm -f $(O_FILES) multiplayerpatch.o multiplayerpatch.xml multiplayerpatch.ini
+	rm -f $(O_FILES) $(all)
 
+#%.o: %.s
+#	$(AS) $(ASMFLAGS) -o $@ $<
 
-%.o: %.s
-	$(AS) -o $@ $<
-
-%.o: %.S
-	$(CC) $(DEFINES) -c -o $@ $<
+%.o: %.cpp
+	$(CXX) $(CXXLAGS) $(DEFINES) -c -o $@ $<
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) -c -o $@ $<
 
-# Kamek can't link symbols across multiple object files, so
-# combine all our object files into one and pass that to Kamek.
-multiplayerpatch.o: $(O_FILES)
-	$(LD) --relocatable -o $@ $(O_FILES)
+interrupts.xml: interruptSubs.o
+	$(KAMEK) -static=$(SYMBOL_OSEV_ADDR) -externals=$(SYMBOL_MAP) -output-riiv=$@ interruptSubs.o
 
-multiplayerpatch.xml: multiplayerpatch.o
-	$(KAMEK) -static=$(ADDRESS) -externals=$(SYMBOL_MAP) -output-riiv=$@ $<
-
-multiplayerpatch.ini: multiplayerpatch.o
-	$(KAMEK) -static=$(ADDRESS) -externals=$(SYMBOL_MAP) -output-dolphin=$@ $<
+CustomCode_USA.bin: $(O_FILES)
+	$(KAMEK) -externals=$(SYMBOL_MAP) -output-kamek=$@ $(O_FILES)
