@@ -1,3 +1,7 @@
+ifneq "$(wildcard dependencies.mk)" "dependencies.mk"
+$(error Error: could not find file `dependencies.mk`. Please make a copy of `dependencies.mk.template`, rename the copy to `dependencies.mk`, and adjust the copy as necessary before attempting to build again.)
+endif
+
 # Get all of the locations for dependencies
 # Modify dependencies.mk to set the locations/commands for each tool
 include dependencies.mk
@@ -14,10 +18,14 @@ CFLAGS := -lang c99 $(CXXFLAGS)
 
 O_FILES := net.o packets.o 
 
+ifndef SYMBOL_MAP
+$(error Error: no symbol map specified)
+endif
 
 export SYMBOL_MAP
 SYMBOL_OSEV_ADDR := $(shell export SYMBOL_MAP="$(SYMBOL_MAP)" ; line=`grep OSExceptionVector $$SYMBOL_MAP` ; echo $${line#*=})
 
+.PHONY: clean
 
 all: interrupts.xml CustomCode_USA.bin
 
